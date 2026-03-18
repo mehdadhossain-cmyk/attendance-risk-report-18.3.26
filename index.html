@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Attendance Risk Impact Report</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{
+      --bg:#f8fafc;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --border:#e2e8f0;
+      --blue:#2563eb;
+      --violet:#7c3aed;
+      --orange:#ea580c;
+      --red:#dc2626;
+      --green:#16a34a;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      max-width:1200px;
+      margin:0 auto;
+      padding:24px;
+    }
+    .hero{
+      background:linear-gradient(135deg,#0f172a,#1e3a8a);
+      color:#fff;
+      padding:32px;
+      border-radius:24px;
+      box-shadow:0 12px 30px rgba(15,23,42,.18);
+      margin-bottom:20px;
+    }
+    .hero h1{
+      margin:0 0 12px;
+      font-size:36px;
+      line-height:1.1;
+    }
+    .hero p{
+      margin:0;
+      max-width:850px;
+      color:#dbeafe;
+      line-height:1.7;
+    }
+    .pill{
+      display:inline-block;
+      margin-bottom:14px;
+      padding:7px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.14);
+      font-size:13px;
+    }
+    .kpi-grid{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:16px;
+      margin-bottom:20px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:22px;
+      padding:20px;
+      box-shadow:0 8px 20px rgba(15,23,42,.04);
+    }
+    .kpi-title{
+      font-size:14px;
+      color:var(--muted);
+      margin-bottom:10px;
+    }
+    .kpi-value{
+      font-size:34px;
+      font-weight:700;
+      margin-bottom:8px;
+    }
+    .kpi-sub{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.5;
+    }
+    .grid-3{
+      display:grid;
+      grid-template-columns:2fr 1fr;
+      gap:16px;
+      margin-bottom:20px;
+    }
+    .grid-2{
+      display:grid;
+      grid-template-columns:2fr 1fr;
+      gap:16px;
+      margin-bottom:20px;
+    }
+    .grid-focus{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+    }
+    h2{
+      margin:0 0 16px;
+      font-size:20px;
+    }
+    .summary p{
+      margin:0 0 14px;
+      color:var(--muted);
+      line-height:1.7;
+    }
+    canvas{
+      width:100% !important;
+      height:320px !important;
+    }
+    .focus-value{
+      font-size:40px;
+      font-weight:700;
+      margin:8px 0 12px;
+    }
+    .toolbar{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .btn{
+      appearance:none;
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:12px;
+      padding:10px 14px;
+      cursor:pointer;
+      font-size:14px;
+    }
+    .small{
+      color:var(--muted);
+      font-size:13px;
+    }
+    @media (max-width: 980px){
+      .kpi-grid, .grid-focus{grid-template-columns:1fr 1fr}
+      .grid-3, .grid-2{grid-template-columns:1fr}
+    }
+    @media (max-width: 640px){
+      .kpi-grid, .grid-focus{grid-template-columns:1fr}
+      .hero h1{font-size:28px}
+      .wrap{padding:16px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="pill">Interactive impact report</div>
+      <h1>Reduction in students below the 40% risk threshold</h1>
+      <p>
+        This week’s attendance monitoring shows <strong id="currentCount">269 students</strong> currently below the 40% attendance threshold,
+        compared to <strong id="baselineCount">434 students</strong> in the baseline data from 03/03/2026.
+        This reflects a significant reduction in the at-risk population and indicates positive impact from ongoing interventions.
+      </p>
+    </section>
+
+    <div class="toolbar">
+      <div class="small">Use the live controls to adjust the report values for future weeks.</div>
+      <button class="btn" onclick="downloadSnapshot()">Download summary as JSON</button>
+    </div>
+
+    <section class="kpi-grid">
+      <div class="card"><div class="kpi-title">Baseline cohort</div><div class="kpi-value" id="kpiBaseline"></div><div class="kpi-sub">Students under 40% on 03/03/2026</div></div>
+      <div class="card"><div class="kpi-title">Current cohort</div><div class="kpi-value" id="kpiCurrent"></div><div class="kpi-sub">Students currently under 40%</div></div>
+      <div class="card"><div class="kpi-title">New risks</div><div class="kpi-value" id="kpiNew"></div><div class="kpi-sub">Students newly identified this week</div></div>
+      <div class="card"><div class="kpi-title">Improving</div><div class="kpi-value" id="kpiImproving"></div><div class="kpi-sub">Attendance has moved upward</div></div>
+      <div class="card"><div class="kpi-title">Declining</div><div class="kpi-value" id="kpiDeclining"></div><div class="kpi-sub">Attendance has moved downward</div></div>
+    </section>
+
+    <section class="grid-3">
+      <div class="card">
+        <h2>Risk cohort trend</h2>
+        <canvas id="trendChart"></canvas>
+      </div>
+      <div class="card">
+        <h2>Current risk breakdown</h2>
+        <canvas id="riskChart"></canvas>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="card">
+        <h2>Attendance movement within the current cohort</h2>
+        <canvas id="movementChart"></canvas>
+      </div>
+      <div class="card summary">
+        <h2>Management summary</h2>
+        <p>Out of the current cohort, <strong id="sumNew"></strong> students are newly identified as at risk this week and <strong id="sumExisting"></strong> students were already in the risk category.</p>
+        <p>In terms of attendance movement, <strong id="sumImproving"></strong> students have improved, <strong id="sumDeclining"></strong> have declined further, and <strong id="sumNoChange"></strong> have shown no change.</p>
+        <p>The data suggests that intervention efforts are contributing to improvement for a large proportion of students. However, continued focus is required for declining and unchanged cases, particularly those who remain difficult to engage.</p>
+        <p>Moving forward, priority will be placed on newly identified risk students, declining attendance cases, and students with no change despite intervention.</p>
+      </div>
+    </section>
+
+    <section class="grid-focus">
+      <div class="card">
+        <h2>Newly identified risk students</h2>
+        <div class="focus-value" id="focusNew"></div>
+        <div class="small">Students who entered the below-40% group this week and need early contact.</div>
+      </div>
+      <div class="card">
+        <h2>Declining attendance cases</h2>
+        <div class="focus-value" id="focusDeclining"></div>
+        <div class="small">Students whose attendance has worsened compared with the baseline week.</div>
+      </div>
+      <div class="card">
+        <h2>No change despite intervention</h2>
+        <div class="focus-value" id="focusNoChange"></div>
+        <div class="small">Students who remain at the same risk level and need targeted follow-up.</div>
+      </div>
+    </section>
+  </div>
+
+<script>
+const report = {
+  baseline: 434,
+  current: 269,
+  newRisks: 29,
+  existingRisks: 240,
+  improving: 120,
+  declining: 87,
+  noChange: 33
+};
+
+function setText(id, value){
+  document.getElementById(id).textContent = value;
+}
+
+function fillReport(){
+  setText("currentCount", report.current + " students");
+  setText("baselineCount", report.baseline + " students");
+  setText("kpiBaseline", report.baseline);
+  setText("kpiCurrent", report.current);
+  setText("kpiNew", report.newRisks);
+  setText("kpiImproving", report.improving);
+  setText("kpiDeclining", report.declining);
+  setText("sumNew", report.newRisks);
+  setText("sumExisting", report.existingRisks);
+  setText("sumImproving", report.improving);
+  setText("sumDeclining", report.declining);
+  setText("sumNoChange", report.noChange);
+  setText("focusNew", report.newRisks);
+  setText("focusDeclining", report.declining);
+  setText("focusNoChange", report.noChange);
+}
+
+let trendChart, riskChart, movementChart;
+
+function buildCharts(){
+  if (trendChart) trendChart.destroy();
+  if (riskChart) riskChart.destroy();
+  if (movementChart) movementChart.destroy();
+
+  trendChart = new Chart(document.getElementById("trendChart"), {
+    type: "line",
+    data: {
+      labels: ["03 Mar 2026", "18 Mar 2026"],
+      datasets: [{
+        label: "Students below 40%",
+        data: [report.baseline, report.current],
+        borderColor: "#2563eb",
+        backgroundColor: "rgba(37,99,235,.18)",
+        tension: 0.3,
+        fill: true,
+        pointRadius: 5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: "top" } }
+    }
+  });
+
+  riskChart = new Chart(document.getElementById("riskChart"), {
+    type: "doughnut",
+    data: {
+      labels: ["New Risk", "Existing Risk"],
+      datasets: [{
+        data: [report.newRisks, report.existingRisks],
+        backgroundColor: ["#2563eb", "#7c3aed"]
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: "bottom" } }
+    }
+  });
+
+  movementChart = new Chart(document.getElementById("movementChart"), {
+    type: "bar",
+    data: {
+      labels: ["Improving", "Declining", "No Change"],
+      datasets: [{
+        label: "Students",
+        data: [report.improving, report.declining, report.noChange],
+        backgroundColor: ["#16a34a", "#dc2626", "#ea580c"],
+        borderRadius: 10
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function downloadSnapshot(){
+  const blob = new Blob([JSON.stringify(report, null, 2)], {type: "application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "attendance-risk-report.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+fillReport();
+buildCharts();
+</script>
+</body>
+</html>
