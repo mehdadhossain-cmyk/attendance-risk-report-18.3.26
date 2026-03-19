@@ -217,7 +217,7 @@
 
     <div class="toolbar">
       <div class="small">This report now includes whole-population attendance slabs and campus under-40 analysis.</div>
-      <button class="btn" onclick="downloadSnapshot()">Download summary as JSON</button>
+      <!--<button class="btn" onclick="downloadSnapshot()">Download summary as JSON</button> -->
     </div>
 
     <section class="kpi-grid">
@@ -296,7 +296,7 @@
       </div>
       <div class="card summary">
         <h2>Campus insights</h2>
-        <p><strong>UKMC College House</strong> has the highest concentration of students below 40% attendance with <strong>96 students</strong>, followed by <strong>UKMC Abarna Campus</strong> with <strong>66</strong>.</p>
+        <p><strong>UKMC College House</strong> has the highest concentration of students below 40% attendance with <strong>95 students</strong>, followed by <strong>UKMC Abarna Campus</strong> with <strong>65</strong>.</p>
         <p>Derby, Salford, and Newcastle show moderate numbers, while Sunderland has the lowest count in the current under-40 group.</p>
         <p>This allows intervention effort to be prioritised by campus as well as by attendance severity.</p>
       </div>
@@ -330,18 +330,18 @@ const report = {
   declining: 87,
   noChange: 33,
   slabs: [
-    { range: "0-10%", students: 38, meaning: "Critical intervention needed" },
-    { range: "10-25%", students: 83, meaning: "Very high risk" },
-    { range: "25-40%", students: 159, meaning: "High risk and most recoverable" },
-    { range: "40-60%", students: 490, meaning: "Monitor closely" },
-    { range: "60-80%", students: 1358, meaning: "Stable" },
-    { range: "80-100%", students: 4992, meaning: "Healthy attendance band" }
+    { range: "0-10%", students: 37, meaning: "Critical intervention needed" },
+    { range: "11-25%", students: 74, meaning: "Very high risk" },
+    { range: "26-40%", students: 158, meaning: "High risk and most recoverable" },
+    { range: "41-60%", students: 490, meaning: "Monitor closely" },
+    { range: "61-80%", students: 1358, meaning: "Stable" },
+    { range: "81-100%", students: 4992, meaning: "Healthy attendance band" }
   ],
   campusUnder40: [
-    { campus: "UKMC College House", students: 96 },
-    { campus: "UKMC Abarna Campus", students: 66 },
+    { campus: "UKMC College House", students: 95 },
+    { campus: "UKMC Abarna Campus", students: 65 },
     { campus: "UKMC Derby", students: 40 },
-    { campus: "UKMC Salford Campus", students: 37 },
+    { campus: "UKMC Salford Campus", students: 36 },
     { campus: "UKMC Newcastle", students: 25 },
     { campus: "UKMC Sunderland", students: 8 }
   ]
